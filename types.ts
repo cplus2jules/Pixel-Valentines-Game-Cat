@@ -7,19 +7,19 @@ export interface CatObject {
   isJumping: boolean;
   color: string;
   name: string;
-  patches?: boolean; // For Jules
+  patches?: boolean;
   message?: string;
   messageTimer?: number;
 }
 
 export interface HeartObject {
   x: number;
-  y: number; // Offset from ground
+  y: number;
   width: number;
   height: number;
   collected: boolean;
   color: string;
-  baseY: number; // Original Y for bobbing
+  baseY: number;
   bobOffset: number;
 }
 
@@ -43,11 +43,11 @@ export interface CloudObject {
 export interface SceneryObject {
   type: 'tree' | 'castle' | 'vine_tree' | 'village_house';
   x: number;
-  y: number; // Base Y position
+  y: number;
   width: number;
   height: number;
   color: string;
-  details?: any; // For orchids etc
+  details?: any;
 }
 
 export interface ButterflyObject {
