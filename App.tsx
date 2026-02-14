@@ -8,9 +8,6 @@ export default function App() {
         <h1 className="text-2xl md:text-4xl text-val-pink mb-4 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] uppercase leading-relaxed">
           BART AND JULES<br />THE KITTON RUNNER
         </h1>
-        <p className="text-white text-xs md:text-sm opacity-80 text-val-light">
-          A Valentine's Adventure
-        </p>
       </header>
 
       <main className="w-full max-w-[800px]">
