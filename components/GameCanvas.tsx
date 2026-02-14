@@ -17,7 +17,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onVictory })
 
   const animate = useCallback(() => {
     if (engineRef.current) {
-      // Pass the playing state to update loop
       const isPlaying = gameState === GameState.PLAYING;
       engineRef.current.update(isPlaying);
       engineRef.current.draw();
@@ -33,13 +32,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onVictory })
 
   useEffect(() => {
     if (canvasRef.current && !engineRef.current) {
-      // Initialize canvas size
       canvasRef.current.width = 800;
       canvasRef.current.height = 400;
       engineRef.current = new GameEngine(canvasRef.current);
     }
-
-    // Start loop
     requestRef.current = requestAnimationFrame(animate);
 
     return () => {
@@ -97,7 +93,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onVictory })
       )}
 
       {gameState === GameState.VICTORY && (
-        // Reduced opacity to bg-black/40 so fireworks are visible
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white z-20 backdrop-blur-[2px]">
           <Trophy className="w-16 h-16 text-val-gold mb-4 animate-bounce drop-shadow-lg" />
           <h2 className="font-pixel text-xl md:text-2xl text-val-pink mb-4 text-center px-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">HAPPY VALENTINE'S DAY!</h2>

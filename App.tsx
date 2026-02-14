@@ -6,7 +6,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-900 flex flex-col items-center py-8 px-4 font-pixel">
       <header className="mb-8 text-center">
         <h1 className="text-2xl md:text-4xl text-val-pink mb-4 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] uppercase leading-relaxed">
-          BART AND JULES<br />THE CAT RUNNER
+          BART AND JULES<br />THE KITTON RUNNER
         </h1>
         <p className="text-white text-xs md:text-sm opacity-80 text-val-light">
           A Valentine's Adventure
