@@ -20,12 +20,12 @@ export default function App() {
         />
       </main>
 
-      <footer className="mt-12 text-gray-400 text-xs text-center max-w-lg leading-loose space-y-4">
-        <p className="drop-shadow-sm font-pixel">
+      <footer className="mt-8 text-gray-500 text-[10px] text-center max-w-lg leading-relaxed space-y-2">
+        <p className="drop-shadow-sm font-pixel opacity-80">
           You can use the Spacebar or Tap to jump.<br /> Reach 350 points for a surprise!
         </p>
-        <div className="pt-8 border-t border-gray-800">
-          <p className="mb-2 font-pixel">made with <span className="text-val-pink animate-pulse drop-shadow-[0_0_5px_rgba(255,20,147,0.8)]">&lt;3</span> by your jules. Play this whenever you miss me and needed a little cheering!</p>
+        <div className="pt-4 border-t border-gray-800/50">
+          <p className="mb-1 font-pixel opacity-70">made with <span className="text-val-pink animate-pulse drop-shadow-[0_0_5px_rgba(255,20,147,0.8)]">&lt;3</span> by your jules. Play this whenever you miss me and needed a little cheering!</p>
         </div>
       </footer>
     </div>
