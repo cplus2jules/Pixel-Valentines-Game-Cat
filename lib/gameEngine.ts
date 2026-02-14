@@ -4,28 +4,28 @@ import { CatObject, HeartObject, Particle, CloudObject, SceneryObject, Butterfly
 export class GameEngine {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  
-  // Game State
+
+
   score: number = 0;
   distance: number = 0;
   speed: number = GAME_CONSTANTS.SCROLL_SPEED_BASE;
   gameOver: boolean = false;
   victory: boolean = false;
   frameCount: number = 0;
-  
-  // Entities
+
+
   bart: CatObject;
   jules: CatObject;
   hearts: HeartObject[] = [];
   particles: Particle[] = [];
-  
-  // Scenery Entities
+
+
   clouds: CloudObject[] = [];
   scenery: SceneryObject[] = [];
   butterflies: ButterflyObject[] = [];
   birds: BirdObject[] = [];
-  
-  // Logic
+
+
   groundY: number;
   julesJumpQueue: number | null = null;
   nextSpawnDistance: number = 0;
@@ -34,10 +34,10 @@ export class GameEngine {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d')!;
-    this.ctx.imageSmoothingEnabled = false; // Ensure sharp pixels
+    this.ctx.imageSmoothingEnabled = false;
     this.groundY = GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.GROUND_Y_OFFSET;
 
-    // Dimensions for 2x pixel size (approx 22x18 grid -> 44x36 pixels)
+
     this.bart = {
       x: GAME_CONSTANTS.CANVAS_WIDTH * 0.25,
       y: this.groundY - 36,
@@ -80,11 +80,11 @@ export class GameEngine {
     this.birds = [];
     this.nextSpawnDistance = 500;
     this.nextScenerySpawn = 0;
-    
+
     this.bart.y = this.groundY - 36;
     this.bart.velocity_y = 0;
     this.bart.isJumping = false;
-    
+
     this.jules.y = this.groundY - 36;
     this.jules.velocity_y = 0;
     this.jules.isJumping = false;
@@ -92,12 +92,12 @@ export class GameEngine {
     this.jules.messageTimer = 0;
     this.julesJumpQueue = null;
 
-    // Initial scenery population
+
     this.initScenery();
   }
 
   initScenery() {
-    // Spawn initial clouds
+
     for (let i = 0; i < 6; i++) {
       this.clouds.push({
         x: Math.random() * GAME_CONSTANTS.CANVAS_WIDTH,
@@ -107,7 +107,7 @@ export class GameEngine {
       });
     }
 
-    // Spawn some initial trees
+
     for (let i = 0; i < 3; i++) {
       this.spawnSceneryItem(i * 300 + 100);
     }
@@ -115,15 +115,15 @@ export class GameEngine {
 
   jump() {
     if (this.bart.isJumping || this.gameOver || this.victory) return;
-    
+
     this.bart.velocity_y = GAME_CONSTANTS.JUMP_FORCE;
     this.bart.isJumping = true;
 
-    // Schedule Jules to jump
+
     setTimeout(() => {
       if (!this.gameOver && !this.victory) {
-         this.jules.velocity_y = GAME_CONSTANTS.JUMP_FORCE;
-         this.jules.isJumping = true;
+        this.jules.velocity_y = GAME_CONSTANTS.JUMP_FORCE;
+        this.jules.isJumping = true;
       }
     }, GAME_CONSTANTS.JUMP_DELAY);
   }
@@ -133,25 +133,25 @@ export class GameEngine {
 
     this.updateBackgroundElements();
 
-    // Check Victory FIRST so animation continues even if isPlaying is false (which React sets on Victory)
+
     if (this.victory) {
-         this.updateParticles();
-         // Randomly spawn continuous fireworks
-         if (this.frameCount % 15 === 0) { // Very frequent fireworks (every ~0.25s)
-             const x = Math.random() * GAME_CONSTANTS.CANVAS_WIDTH;
-             const y = Math.random() * (GAME_CONSTANTS.CANVAS_HEIGHT / 2); // Top half only
-             this.spawnFireworkBurst(x, y, 40);
-         }
-         // Keep cats visible on ground
-         this.bart.y = this.groundY - this.bart.height;
-         this.jules.y = this.groundY - this.jules.height;
-         return;
+      this.updateParticles();
+
+      if (this.frameCount % 15 === 0) {
+        const x = Math.random() * GAME_CONSTANTS.CANVAS_WIDTH;
+        const y = Math.random() * (GAME_CONSTANTS.CANVAS_HEIGHT / 2);
+        this.spawnFireworkBurst(x, y, 40);
+      }
+
+      this.bart.y = this.groundY - this.bart.height;
+      this.jules.y = this.groundY - this.jules.height;
+      return;
     }
 
     if (!isPlaying) {
       this.bart.y = this.groundY - this.bart.height;
       this.jules.y = this.groundY - this.jules.height;
-      return; 
+      return;
     }
 
     if (this.gameOver) {
@@ -160,62 +160,62 @@ export class GameEngine {
 
     this.distance += this.speed;
 
-    // Speed progression
+
     if (this.score > 0 && this.score % 50 === 0) {
-       // Slightly increase speed logic if needed
+
     }
 
-    // Physics
+
     this.applyPhysics(this.bart);
     this.applyPhysics(this.jules);
 
-    // Jules Messages Logic
+
     if (this.jules.messageTimer && this.jules.messageTimer > 0) {
       this.jules.messageTimer--;
       if (this.jules.messageTimer <= 0) {
         this.jules.message = "";
       }
     } else {
-      // Very frequent messages (approx every 1.5 - 3 seconds)
-      if (Math.random() < 0.02) { 
+
+      if (Math.random() < 0.02) {
         const msg = JULES_MESSAGES[Math.floor(Math.random() * JULES_MESSAGES.length)];
         this.jules.message = msg;
-        this.jules.messageTimer = 180; // Show for 3 seconds
+        this.jules.messageTimer = 180;
       }
     }
 
-    // Spawning Hearts
+
     if (this.distance > this.nextSpawnDistance) {
       this.spawnPattern();
     }
 
-    // Spawning Scenery
+
     if (this.distance > this.nextScenerySpawn) {
-        this.spawnSceneryItem(GAME_CONSTANTS.CANVAS_WIDTH + 100);
-        this.nextScenerySpawn = this.distance + 200 + Math.random() * 300;
+      this.spawnSceneryItem(GAME_CONSTANTS.CANVAS_WIDTH + 100);
+      this.nextScenerySpawn = this.distance + 200 + Math.random() * 300;
     }
 
-    // Random Butterfly spawn
+
     if (Math.random() < 0.015) {
-        this.butterflies.push({
-            x: GAME_CONSTANTS.CANVAS_WIDTH + 50,
-            y: this.groundY - 50 - Math.random() * 100,
-            baseY: this.groundY - 50 - Math.random() * 100,
-            speed: 2 + Math.random() * 1,
-            color: Math.random() > 0.5 ? '#FF69B4' : '#00FFFF', // Pink or Cyan
-            offset: Math.random() * Math.PI * 2
-        });
+      this.butterflies.push({
+        x: GAME_CONSTANTS.CANVAS_WIDTH + 50,
+        y: this.groundY - 50 - Math.random() * 100,
+        baseY: this.groundY - 50 - Math.random() * 100,
+        speed: 2 + Math.random() * 1,
+        color: Math.random() > 0.5 ? '#FF69B4' : '#00FFFF', // Pink or Cyan
+        offset: Math.random() * Math.PI * 2
+      });
     }
-    
+
     // Random Bird spawn (Higher up)
     if (Math.random() < 0.005) {
-        this.birds.push({
-            x: GAME_CONSTANTS.CANVAS_WIDTH + 50,
-            y: 40 + Math.random() * 150,
-            speed: 3 + Math.random() * 1.5,
-            color: '#FFB6C1', // Light pink birds
-            wingOffset: Math.random() * 10
-        });
+      this.birds.push({
+        x: GAME_CONSTANTS.CANVAS_WIDTH + 50,
+        y: 40 + Math.random() * 150,
+        speed: 3 + Math.random() * 1.5,
+        color: '#FFB6C1', // Light pink birds
+        wingOffset: Math.random() * 10
+      });
     }
 
     // Update Hearts
@@ -234,85 +234,85 @@ export class GameEngine {
   updateBackgroundElements() {
     // Clouds
     this.clouds.forEach(c => {
-        c.x -= c.speed;
-        if (c.x + c.width < -100) {
-            c.x = GAME_CONSTANTS.CANVAS_WIDTH + 50;
-            c.y = 20 + Math.random() * 120;
-        }
+      c.x -= c.speed;
+      if (c.x + c.width < -100) {
+        c.x = GAME_CONSTANTS.CANVAS_WIDTH + 50;
+        c.y = 20 + Math.random() * 120;
+      }
     });
 
     // Scenery (moves slower than foreground speed for parallax effect)
-    const scenerySpeed = this.speed * 0.5; 
+    const scenerySpeed = this.speed * 0.5;
     for (let i = this.scenery.length - 1; i >= 0; i--) {
-        const item = this.scenery[i];
-        if (!this.victory) item.x -= scenerySpeed;
-        if (item.x + item.width < -150) {
-            this.scenery.splice(i, 1);
-        }
+      const item = this.scenery[i];
+      if (!this.victory) item.x -= scenerySpeed;
+      if (item.x + item.width < -150) {
+        this.scenery.splice(i, 1);
+      }
     }
 
     // Butterflies
     for (let i = this.butterflies.length - 1; i >= 0; i--) {
-        const b = this.butterflies[i];
-        b.x -= b.speed;
-        b.y = b.baseY + Math.sin(this.frameCount * 0.15 + b.offset) * 20;
-        if (b.x < -20) this.butterflies.splice(i, 1);
+      const b = this.butterflies[i];
+      b.x -= b.speed;
+      b.y = b.baseY + Math.sin(this.frameCount * 0.15 + b.offset) * 20;
+      if (b.x < -20) this.butterflies.splice(i, 1);
     }
 
     // Birds
     for (let i = this.birds.length - 1; i >= 0; i--) {
-        const b = this.birds[i];
-        b.x -= b.speed;
-        b.y += Math.sin(this.frameCount * 0.05 + b.wingOffset) * 0.5; // Slight glide wave
-        if (b.x < -30) this.birds.splice(i, 1);
+      const b = this.birds[i];
+      b.x -= b.speed;
+      b.y += Math.sin(this.frameCount * 0.05 + b.wingOffset) * 0.5; // Slight glide wave
+      if (b.x < -30) this.birds.splice(i, 1);
     }
   }
 
   spawnSceneryItem(x: number) {
-      const rand = Math.random();
-      
-      if (rand < 0.4) {
-          // Orchid Tree
-          this.scenery.push({
-              type: 'tree',
-              x: x,
-              y: this.groundY, 
-              width: 50,
-              height: 100 + Math.random() * 40,
-              color: '#556B2F', // Dark Olive Green foliage base
-              details: { orchids: true }
-          });
-      } else if (rand < 0.7) {
-          // Vine Tree
-          this.scenery.push({
-              type: 'vine_tree',
-              x: x,
-              y: this.groundY,
-              width: 60,
-              height: 110 + Math.random() * 50,
-              color: '#2E8B57', // Sea Green
-          });
-      } else if (rand < 0.9) {
-          // Village House
-          this.scenery.push({
-              type: 'village_house',
-              x: x,
-              y: this.groundY,
-              width: 70 + Math.random() * 20,
-              height: 60 + Math.random() * 20,
-              color: '#FFB6C1', // Light pink walls
-          });
-      } else {
-          // Castle (Rare)
-          this.scenery.push({
-              type: 'castle',
-              x: x,
-              y: this.groundY,
-              width: 100,
-              height: 140,
-              color: '#806080' // Purple/Grey
-          });
-      }
+    const rand = Math.random();
+
+    if (rand < 0.4) {
+      // Orchid Tree
+      this.scenery.push({
+        type: 'tree',
+        x: x,
+        y: this.groundY,
+        width: 50,
+        height: 100 + Math.random() * 40,
+        color: '#556B2F', // Dark Olive Green foliage base
+        details: { orchids: true }
+      });
+    } else if (rand < 0.7) {
+      // Vine Tree
+      this.scenery.push({
+        type: 'vine_tree',
+        x: x,
+        y: this.groundY,
+        width: 60,
+        height: 110 + Math.random() * 50,
+        color: '#2E8B57', // Sea Green
+      });
+    } else if (rand < 0.9) {
+      // Village House
+      this.scenery.push({
+        type: 'village_house',
+        x: x,
+        y: this.groundY,
+        width: 70 + Math.random() * 20,
+        height: 60 + Math.random() * 20,
+        color: '#FFB6C1', // Light pink walls
+      });
+    } else {
+      // Castle (Rare)
+      this.scenery.push({
+        type: 'castle',
+        x: x,
+        y: this.groundY,
+        width: 100,
+        height: 140,
+        color: '#806080' // Purple/Grey
+      });
+    }
   }
 
   applyPhysics(cat: CatObject) {
@@ -329,11 +329,11 @@ export class GameEngine {
 
   spawnPattern() {
     const pattern = HEART_PATTERNS[Math.floor(Math.random() * HEART_PATTERNS.length)];
-    
+
     pattern.hearts.forEach(h => {
       this.hearts.push({
         x: GAME_CONSTANTS.CANVAS_WIDTH + (h.x || 0),
-        y: (this.groundY - 30) + h.y, 
+        y: (this.groundY - 30) + h.y,
         width: 20,
         height: 20,
         collected: false,
@@ -345,7 +345,7 @@ export class GameEngine {
 
     const gap = GAP_BETWEEN_PATTERNS[Math.floor(Math.random() * GAP_BETWEEN_PATTERNS.length)];
     const speedFactor = Math.floor(this.score / 50) * 0.1;
-    const finalGap = gap * (1 - Math.min(speedFactor, 0.5)); 
+    const finalGap = gap * (1 - Math.min(speedFactor, 0.5));
 
     this.nextSpawnDistance = this.distance + finalGap;
   }
@@ -427,7 +427,7 @@ export class GameEngine {
     // Draw Ground
     this.ctx.fillStyle = '#FFB6C1';
     this.ctx.fillRect(0, this.groundY, this.canvas.width, GAME_CONSTANTS.CANVAS_HEIGHT - this.groundY);
-    
+
     // Draw Pixel Stripes on Ground
     this.ctx.fillStyle = '#FFF0F5';
     const stripeWidth = 40;
@@ -452,7 +452,7 @@ export class GameEngine {
     // Draw Particles with Pixel Glow
     this.particles.forEach(p => {
       this.ctx.globalAlpha = Math.max(0, p.life);
-      
+
       // Glow (larger, translucent square behind)
       this.ctx.fillStyle = p.color;
       this.ctx.globalAlpha = Math.max(0, p.life * 0.4);
@@ -462,7 +462,7 @@ export class GameEngine {
       // Core (solid center)
       this.ctx.globalAlpha = Math.max(0, p.life);
       this.ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
-      
+
       this.ctx.globalAlpha = 1.0;
     });
   }
@@ -472,8 +472,8 @@ export class GameEngine {
     let skyColor2 = '#E0F7FA'; // Light cyan
 
     if (this.score >= 100) {
-       skyColor1 = '#191970'; // Midnight Blue
-       skyColor2 = '#483D8B'; // Dark Slate Blue
+      skyColor1 = '#191970'; // Midnight Blue
+      skyColor2 = '#483D8B'; // Dark Slate Blue
     }
 
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
@@ -492,187 +492,187 @@ export class GameEngine {
 
     // Draw pixel circle
     for (let y = -radius; y <= radius; y += px) {
-        for (let x = -radius; x <= radius; x += px) {
-            if (x * x + y * y <= radius * radius) {
-                this.ctx.fillRect(cx + x, cy + y, px, px);
-            }
+      for (let x = -radius; x <= radius; x += px) {
+        if (x * x + y * y <= radius * radius) {
+          this.ctx.fillRect(cx + x, cy + y, px, px);
         }
+      }
     }
 
     // Sun Rays (Day only)
     if (this.score < 100) {
-        this.ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
-        const rayLen = 16;
-        // Cardinal directions
-        this.ctx.fillRect(cx - radius - rayLen, cy - 4, rayLen, 8);
-        this.ctx.fillRect(cx + radius, cy - 4, rayLen, 8);
-        this.ctx.fillRect(cx - 4, cy - radius - rayLen, 8, rayLen);
-        this.ctx.fillRect(cx - 4, cy + radius, 8, rayLen);
+      this.ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+      const rayLen = 16;
+      // Cardinal directions
+      this.ctx.fillRect(cx - radius - rayLen, cy - 4, rayLen, 8);
+      this.ctx.fillRect(cx + radius, cy - 4, rayLen, 8);
+      this.ctx.fillRect(cx - 4, cy - radius - rayLen, 8, rayLen);
+      this.ctx.fillRect(cx - 4, cy + radius, 8, rayLen);
     }
   }
 
   drawSceneryElements() {
-      const px = 4; // Background pixel scale
+    const px = 4; // Background pixel scale
 
-      // 1. Clouds
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      this.clouds.forEach(c => {
-          const x = Math.floor(c.x);
-          const y = Math.floor(c.y);
-          const w = Math.floor(c.width);
-          
-          // Pixel Cloud Shape
-          // Bottom Layer
-          this.ctx.fillRect(x, y + px*4, w, px*4);
-          // Middle Layer
-          this.ctx.fillRect(x + px*2, y + px*2, w - px*4, px*2);
-          // Top bumps
-          this.ctx.fillRect(x + px*4, y, px*4, px*2);
-          this.ctx.fillRect(x + w/2, y - px*2, px*6, px*4);
-      });
+    // 1. Clouds
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    this.clouds.forEach(c => {
+      const x = Math.floor(c.x);
+      const y = Math.floor(c.y);
+      const w = Math.floor(c.width);
 
-      // 2. Scenery
-      this.scenery.forEach(item => {
-          const x = Math.floor(item.x);
-          const y = Math.floor(item.y);
-          const w = Math.floor(item.width);
-          const h = Math.floor(item.height);
+      // Pixel Cloud Shape
+      // Bottom Layer
+      this.ctx.fillRect(x, y + px * 4, w, px * 4);
+      // Middle Layer
+      this.ctx.fillRect(x + px * 2, y + px * 2, w - px * 4, px * 2);
+      // Top bumps
+      this.ctx.fillRect(x + px * 4, y, px * 4, px * 2);
+      this.ctx.fillRect(x + w / 2, y - px * 2, px * 6, px * 4);
+    });
 
-          if (item.type === 'tree') {
-              // --- ORCHID TREE ---
-              // Trunk
-              this.ctx.fillStyle = '#8B4513'; // SaddleBrown
-              this.ctx.fillRect(x + w/2 - px, y - h/4, px*2, h/4);
-              
-              // Foliage (Deep green + Purple tint)
-              this.ctx.fillStyle = item.color;
-              // Layers
-              this.ctx.fillRect(x, y - h/2, w, h/4);
-              this.ctx.fillRect(x + px*2, y - h*0.75, w - px*4, h/4);
-              this.ctx.fillRect(x + px*4, y - h, w - px*8, h/4);
+    // 2. Scenery
+    this.scenery.forEach(item => {
+      const x = Math.floor(item.x);
+      const y = Math.floor(item.y);
+      const w = Math.floor(item.width);
+      const h = Math.floor(item.height);
 
-              // Orchids (Vibrant Pink/Purple Pixels)
-              this.ctx.fillStyle = '#FF1493'; // Deep Pink
-              // Random-ish placements using modulo on coords to keep it deterministic per frame
-              if ((x % 7) < 4) this.ctx.fillRect(x + px*2, y - h/2 - px, px, px);
-              if ((x % 5) < 3) this.ctx.fillRect(x + w - px*3, y - h*0.6, px, px);
-              if ((x % 3) < 2) this.ctx.fillRect(x + w/2, y - h + px*2, px, px);
-              
-              // Secondary flower color
-              this.ctx.fillStyle = '#DA70D6'; // Orchid
-              if ((x % 4) === 0) this.ctx.fillRect(x + px*4, y - h/2 + px, px, px);
+      if (item.type === 'tree') {
+        // --- ORCHID TREE ---
+        // Trunk
+        this.ctx.fillStyle = '#8B4513'; // SaddleBrown
+        this.ctx.fillRect(x + w / 2 - px, y - h / 4, px * 2, h / 4);
 
-          } else if (item.type === 'vine_tree') {
-              // --- VINE TREE ---
-              // Trunk
-              this.ctx.fillStyle = '#556B2F'; // Dark Olive Green
-              this.ctx.fillRect(x + w/2 - px*1.5, y - h/3, px*3, h/3);
+        // Foliage (Deep green + Purple tint)
+        this.ctx.fillStyle = item.color;
+        // Layers
+        this.ctx.fillRect(x, y - h / 2, w, h / 4);
+        this.ctx.fillRect(x + px * 2, y - h * 0.75, w - px * 4, h / 4);
+        this.ctx.fillRect(x + px * 4, y - h, w - px * 8, h / 4);
 
-              // Canopy (Wide and flat)
-              this.ctx.fillStyle = '#2E8B57'; // Sea Green
-              this.ctx.fillRect(x - px*2, y - h, w + px*4, h*0.7);
+        // Orchids (Vibrant Pink/Purple Pixels)
+        this.ctx.fillStyle = '#FF1493'; // Deep Pink
+        // Random-ish placements using modulo on coords to keep it deterministic per frame
+        if ((x % 7) < 4) this.ctx.fillRect(x + px * 2, y - h / 2 - px, px, px);
+        if ((x % 5) < 3) this.ctx.fillRect(x + w - px * 3, y - h * 0.6, px, px);
+        if ((x % 3) < 2) this.ctx.fillRect(x + w / 2, y - h + px * 2, px, px);
 
-              // Hanging Vines
-              this.ctx.fillStyle = '#8FBC8F'; // Dark Sea Green (lighter than canopy)
-              // Vine 1
-              this.ctx.fillRect(x, y - h*0.3, px, h*0.2);
-              // Vine 2
-              this.ctx.fillRect(x + w/2, y - h*0.3, px, h*0.15);
-              // Vine 3
-              this.ctx.fillRect(x + w - px, y - h*0.3, px, h*0.25);
+        // Secondary flower color
+        this.ctx.fillStyle = '#DA70D6'; // Orchid
+        if ((x % 4) === 0) this.ctx.fillRect(x + px * 4, y - h / 2 + px, px, px);
 
-          } else if (item.type === 'village_house') {
-              // --- VILLAGE HOUSE ---
-              const houseColor = item.color || '#FFB6C1';
-              
-              // Walls
-              this.ctx.fillStyle = houseColor;
-              this.ctx.fillRect(x, y - h/2, w, h/2);
+      } else if (item.type === 'vine_tree') {
+        // --- VINE TREE ---
+        // Trunk
+        this.ctx.fillStyle = '#556B2F'; // Dark Olive Green
+        this.ctx.fillRect(x + w / 2 - px * 1.5, y - h / 3, px * 3, h / 3);
 
-              // Roof (Triangle-ish steps)
-              this.ctx.fillStyle = '#CD5C5C'; // Indian Red
-              this.ctx.fillRect(x - px, y - h/2, w + px*2, px*2); // Eaves
-              this.ctx.fillRect(x + px, y - h/2 - px*2, w - px*2, px*2); // Mid
-              this.ctx.fillRect(x + px*3, y - h/2 - px*4, w - px*6, px*2); // Top
+        // Canopy (Wide and flat)
+        this.ctx.fillStyle = '#2E8B57'; // Sea Green
+        this.ctx.fillRect(x - px * 2, y - h, w + px * 4, h * 0.7);
 
-              // Door
-              this.ctx.fillStyle = '#8B4513';
-              this.ctx.fillRect(x + w/2 - px*2, y - px*6, px*4, px*6);
+        // Hanging Vines
+        this.ctx.fillStyle = '#8FBC8F'; // Dark Sea Green (lighter than canopy)
+        // Vine 1
+        this.ctx.fillRect(x, y - h * 0.3, px, h * 0.2);
+        // Vine 2
+        this.ctx.fillRect(x + w / 2, y - h * 0.3, px, h * 0.15);
+        // Vine 3
+        this.ctx.fillRect(x + w - px, y - h * 0.3, px, h * 0.25);
 
-              // Window (Lit up)
-              this.ctx.fillStyle = '#FFFFE0'; // Light Yellow
-              this.ctx.fillRect(x + px*2, y - h/2 + px*4, px*3, px*3);
-              this.ctx.fillRect(x + w - px*5, y - h/2 + px*4, px*3, px*3);
+      } else if (item.type === 'village_house') {
+        // --- VILLAGE HOUSE ---
+        const houseColor = item.color || '#FFB6C1';
 
-          } else if (item.type === 'castle') {
-              // --- CASTLE ---
-              // Castle Base
-              this.ctx.fillStyle = item.color; 
-              this.ctx.fillRect(x, y - h/2, w, h/2);
-              
-              // Towers
-              this.ctx.fillRect(x - px*2, y - h*0.8, px*4, h*0.8);
-              this.ctx.fillRect(x + w - px*2, y - h*0.8, px*4, h*0.8);
-              
-              // Battlements
-              this.ctx.fillStyle = item.color;
-              for(let bx = x; bx < x + w; bx += px*2) {
-                  this.ctx.fillRect(bx, y - h/2 - px, px, px);
-              }
+        // Walls
+        this.ctx.fillStyle = houseColor;
+        this.ctx.fillRect(x, y - h / 2, w, h / 2);
 
-              // Roofs (Purple/Red)
-              this.ctx.fillStyle = '#800080'; // Purple
-              this.ctx.fillRect(x - px, y - h*0.8 - px*2, px*2, px*2);
-              this.ctx.fillRect(x + w - px, y - h*0.8 - px*2, px*2, px*2);
+        // Roof (Triangle-ish steps)
+        this.ctx.fillStyle = '#CD5C5C'; // Indian Red
+        this.ctx.fillRect(x - px, y - h / 2, w + px * 2, px * 2); // Eaves
+        this.ctx.fillRect(x + px, y - h / 2 - px * 2, w - px * 2, px * 2); // Mid
+        this.ctx.fillRect(x + px * 3, y - h / 2 - px * 4, w - px * 6, px * 2); // Top
 
-              // Windows
-              this.ctx.fillStyle = '#FFD700';
-              this.ctx.fillRect(x + w/2 - px, y - h/3, px*2, px*3);
-          }
-      });
+        // Door
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.fillRect(x + w / 2 - px * 2, y - px * 6, px * 4, px * 6);
+
+        // Window (Lit up)
+        this.ctx.fillStyle = '#FFFFE0'; // Light Yellow
+        this.ctx.fillRect(x + px * 2, y - h / 2 + px * 4, px * 3, px * 3);
+        this.ctx.fillRect(x + w - px * 5, y - h / 2 + px * 4, px * 3, px * 3);
+
+      } else if (item.type === 'castle') {
+        // --- CASTLE ---
+        // Castle Base
+        this.ctx.fillStyle = item.color;
+        this.ctx.fillRect(x, y - h / 2, w, h / 2);
+
+        // Towers
+        this.ctx.fillRect(x - px * 2, y - h * 0.8, px * 4, h * 0.8);
+        this.ctx.fillRect(x + w - px * 2, y - h * 0.8, px * 4, h * 0.8);
+
+        // Battlements
+        this.ctx.fillStyle = item.color;
+        for (let bx = x; bx < x + w; bx += px * 2) {
+          this.ctx.fillRect(bx, y - h / 2 - px, px, px);
+        }
+
+        // Roofs (Purple/Red)
+        this.ctx.fillStyle = '#800080'; // Purple
+        this.ctx.fillRect(x - px, y - h * 0.8 - px * 2, px * 2, px * 2);
+        this.ctx.fillRect(x + w - px, y - h * 0.8 - px * 2, px * 2, px * 2);
+
+        // Windows
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.fillRect(x + w / 2 - px, y - h / 3, px * 2, px * 3);
+      }
+    });
   }
 
   drawBirds() {
-      this.birds.forEach(b => {
-          const x = Math.floor(b.x);
-          const y = Math.floor(b.y);
-          const px = 2; // Bird pixel size
+    this.birds.forEach(b => {
+      const x = Math.floor(b.x);
+      const y = Math.floor(b.y);
+      const px = 2; // Bird pixel size
 
-          this.ctx.fillStyle = b.color;
-          
-          // Bird Body (Simple horizontal dash)
-          this.ctx.fillRect(x, y, px*3, px);
+      this.ctx.fillStyle = b.color;
 
-          // Wings (Flapping based on offset + time)
-          const flap = Math.sin(this.frameCount * 0.2 + b.wingOffset);
-          if (flap > 0) {
-              // Wing Up
-              this.ctx.fillRect(x + px, y - px, px, px); 
-          } else {
-              // Wing Down
-              this.ctx.fillRect(x + px, y + px, px, px);
-          }
-      });
+      // Bird Body (Simple horizontal dash)
+      this.ctx.fillRect(x, y, px * 3, px);
+
+      // Wings (Flapping based on offset + time)
+      const flap = Math.sin(this.frameCount * 0.2 + b.wingOffset);
+      if (flap > 0) {
+        // Wing Up
+        this.ctx.fillRect(x + px, y - px, px, px);
+      } else {
+        // Wing Down
+        this.ctx.fillRect(x + px, y + px, px, px);
+      }
+    });
   }
 
   drawButterflies() {
-      this.butterflies.forEach(b => {
-        const px = 2; // Small pixel size
-        const x = Math.floor(b.x);
-        const y = Math.floor(b.y);
-        
-        this.ctx.fillStyle = b.color;
-        // Body
-        this.ctx.fillRect(x, y, px, px*3);
-        
-        // Wings (Flapping animation via width)
-        const wingW = Math.floor(Math.abs(Math.sin(this.frameCount * 0.3)) * 4 + 2);
-        this.ctx.fillStyle = '#FFF';
-        // Left wing
-        this.ctx.fillRect(x - wingW, y, wingW, px*2);
-        // Right wing
-        this.ctx.fillRect(x + px, y, wingW, px*2);
-      });
+    this.butterflies.forEach(b => {
+      const px = 2; // Small pixel size
+      const x = Math.floor(b.x);
+      const y = Math.floor(b.y);
+
+      this.ctx.fillStyle = b.color;
+      // Body
+      this.ctx.fillRect(x, y, px, px * 3);
+
+      // Wings (Flapping animation via width)
+      const wingW = Math.floor(Math.abs(Math.sin(this.frameCount * 0.3)) * 4 + 2);
+      this.ctx.fillStyle = '#FFF';
+      // Left wing
+      this.ctx.fillRect(x - wingW, y, wingW, px * 2);
+      // Right wing
+      this.ctx.fillRect(x + px, y, wingW, px * 2);
+    });
   }
 
   // High detail pixel art rendering (2x resolution)
@@ -681,7 +681,7 @@ export class GameEngine {
     const pixelSize = 2; // Finer detail
     const startX = Math.floor(cat.x);
     const startY = Math.floor(cat.y);
-    
+
     const isBart = !cat.patches;
 
     // Palette
@@ -690,11 +690,11 @@ export class GameEngine {
     const C_WHITE = '#FFFFFF';
     const C_PINK = '#FF69B4'; // Ears/Nose
     // Updated: Bart has Blue eyes (#00BFFF), Jules has Amber (#FFBF00)
-    const C_EYE = isBart ? '#00BFFF' : '#FFBF00'; 
+    const C_EYE = isBart ? '#00BFFF' : '#FFBF00';
 
     // Animation frames (0, 1, 2, 3) for smoother run
-    const runCycle = Math.floor(this.frameCount / 5) % 4; 
-    
+    const runCycle = Math.floor(this.frameCount / 5) % 4;
+
     // Helper to draw a pixel
     const p = (x: number, y: number, c: string) => {
       ctx.fillStyle = c;
@@ -708,10 +708,10 @@ export class GameEngine {
 
     // --- BODY & HEAD CONSTRUCTION ---
     // Grid coordinate system: 22 units wide, 18 units tall
-    
+
     // Body (Main block)
     const bodyColor = isBart ? C_ORANGE : C_WHITE;
-    fillRect(2, 6, 14, 8, bodyColor); 
+    fillRect(2, 6, 14, 8, bodyColor);
 
     if (isBart) {
       // Bart's Stripes/Details
@@ -732,10 +732,10 @@ export class GameEngine {
     const headX = 13;
     const headY = 2;
     const headColor = isBart ? C_ORANGE : C_WHITE;
-    
+
     // Head Base
     fillRect(headX, headY, 8, 7, headColor);
-    
+
     if (!isBart) {
       // Jules Face Patch
       fillRect(headX, headY, 3, 4, C_BLACK); // Left ear/eye area
@@ -745,7 +745,7 @@ export class GameEngine {
     // Ears
     p(headX + 1, headY - 1, isBart ? C_ORANGE : C_BLACK);
     p(headX, headY, isBart ? C_ORANGE : C_BLACK);
-    
+
     p(headX + 6, headY - 1, isBart ? C_ORANGE : C_ORANGE);
     p(headX + 7, headY, isBart ? C_ORANGE : C_ORANGE);
 
@@ -755,7 +755,7 @@ export class GameEngine {
       ctx.fillStyle = '#000';
       ctx.fillRect(startX + (headX + 2) * pixelSize, startY + (headY + 3) * pixelSize, 1 * pixelSize, 1 * pixelSize);
       ctx.fillRect(startX + (headX + 3) * pixelSize, startY + (headY + 2) * pixelSize, 1 * pixelSize, 1 * pixelSize);
-      
+
       ctx.fillRect(startX + (headX + 6) * pixelSize, startY + (headY + 3) * pixelSize, 1 * pixelSize, 1 * pixelSize);
       ctx.fillRect(startX + (headX + 5) * pixelSize, startY + (headY + 2) * pixelSize, 1 * pixelSize, 1 * pixelSize);
     } else {
@@ -789,10 +789,10 @@ export class GameEngine {
         fillRect(3, 14, 2, 3, legColor); // Back
         fillRect(13, 14, 2, 3, legColor); // Front
       } else if (runCycle === 1) {
-        fillRect(2, 13, 2, 3, legColor); 
+        fillRect(2, 13, 2, 3, legColor);
         fillRect(12, 13, 2, 3, legColor);
       } else if (runCycle === 2) {
-        fillRect(4, 14, 2, 3, legColor); 
+        fillRect(4, 14, 2, 3, legColor);
         fillRect(14, 14, 2, 3, legColor);
       } else {
         fillRect(5, 13, 2, 3, legColor);
@@ -814,12 +814,12 @@ export class GameEngine {
       const bubbleX = cat.x + cat.width + 5;
       const bubbleY = cat.y - 35;
       const padding = 6;
-      
+
       ctx.font = '10px "Press Start 2P"';
       const metrics = ctx.measureText(cat.message);
       const textWidth = metrics.width;
       const textHeight = 12;
-      
+
       // Draw bubble background
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.strokeStyle = '#FF1493';
@@ -837,7 +837,7 @@ export class GameEngine {
       ctx.lineTo(bubbleX + 5, bubbleY + 22);
       ctx.fill();
       ctx.stroke();
-      
+
       // Clean up overlap
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.fillRect(bubbleX + 2, bubbleY + 15, 6, 8);
@@ -854,7 +854,7 @@ export class GameEngine {
     const x = Math.floor(heart.x);
     const y = Math.floor(heart.y);
     const px = 1; // Base unit
-    
+
     // Pixel heart shape (5x5 grid approx)
     this.ctx.fillRect(x + 5, y, 5, 5);
     this.ctx.fillRect(x + 15, y, 5, 5);
